@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trip Cost Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Saira:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14171c; --panel:#1b2027; --panel2:#222932; --panel3:#283039;
+    --border:#2f3947; --border2:#3b4757;
+    --text:#e7ebf0; --muted:#8a95a4; --faint:#5d6775;
+    --accent:#ffb02e; --accent-dim:#5a4520;
+    --green:#41d392; --green-dim:#1d3b30;
+    --red:#ff5d5d; --red-dim:#3d2122;
+    --mono:'JetBrains Mono',monospace;
+    --disp:'Saira Condensed',sans-serif;
+    --body:'Saira',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--text);font-family:var(--body)}
+  body{
+    background-image:
+      linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+    background-size:26px 26px;
+    min-height:100vh;padding:18px 14px 60px;
+  }
+  .wrap{max-width:760px;margin:0 auto}
+
+  header{display:flex;align-items:flex-end;justify-content:space-between;
+    border-bottom:2px solid var(--accent);padding-bottom:12px;margin-bottom:18px;flex-wrap:wrap;gap:8px}
+  .title{font-family:var(--disp);font-weight:700;font-size:30px;line-height:.95;
+    text-transform:uppercase;letter-spacing:.5px}
+  .title span{color:var(--accent)}
+  .tag{font-family:var(--mono);font-size:10.5px;color:var(--faint);
+    border:1px solid var(--border);padding:3px 8px;border-radius:3px;letter-spacing:.5px}
+
+  .modes{display:flex;gap:0;margin-bottom:18px;border:1px solid var(--border2);border-radius:6px;overflow:hidden}
+  .modes button{flex:1;background:var(--panel);color:var(--muted);border:none;cursor:pointer;
+    font-family:var(--disp);font-weight:600;text-transform:uppercase;letter-spacing:1px;
+    font-size:14px;padding:11px 8px;transition:.18s;border-right:1px solid var(--border2)}
+  .modes button:last-child{border-right:none}
+  .modes button .mlabel{display:block;font-size:10px;letter-spacing:.5px;color:var(--faint);
+    font-family:var(--body);text-transform:none;margin-top:1px}
+  .modes button.on{background:var(--accent);color:#1a1206}
+  .modes button.on .mlabel{color:#5a4006}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:15px 14px;margin-bottom:13px}
+  .panel h2{font-family:var(--disp);font-weight:600;font-size:13px;text-transform:uppercase;
+    letter-spacing:1.4px;color:var(--muted);margin-bottom:13px;display:flex;align-items:center;gap:8px}
+  .panel h2::before{content:'';width:7px;height:7px;background:var(--accent);border-radius:1px;flex:none}
+
+  label.f{display:block;margin-bottom:11px}
+  label.f .lab{display:block;font-size:11.5px;color:var(--muted);margin-bottom:4px;letter-spacing:.3px}
+  .inp{width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:5px;
+    color:var(--text);font-family:var(--mono);font-weight:500;font-size:16px;padding:9px 11px;outline:none;transition:.15s}
+  .inp:focus{border-color:var(--accent);background:var(--panel3)}
+  select.inp{font-family:var(--body);font-size:14px;cursor:pointer;appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%238a95a4' stroke-width='1.5' fill='none'/></svg>");
+    background-repeat:no-repeat;background-position:right 11px center}
+  .unit{position:relative}
+  .unit .u{position:absolute;right:11px;top:50%;transform:translateY(-50%);
+    font-family:var(--mono);font-size:11px;color:var(--faint);pointer-events:none}
+  .unit .inp{padding-right:46px}
+
+  .toll-row{display:grid;grid-template-columns:62px 1fr 70px 78px;gap:8px;align-items:center;margin-bottom:7px}
+  .toll-row .cc{font-family:var(--disp);font-weight:600;font-size:14px;letter-spacing:1px;color:var(--text)}
+  .toll-row .inp{font-size:14px;padding:7px 9px}
+  .toll-row .sub{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-align:right}
+  .toll-head{display:grid;grid-template-columns:62px 1fr 70px 78px;gap:8px;margin-bottom:6px;
+    font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.5px}
+  .toll-head span:nth-child(3),.toll-head span:nth-child(4){text-align:right}
+
+  details.adv{margin-bottom:13px}
+  details.adv>summary{cursor:pointer;list-style:none;font-family:var(--disp);font-weight:600;
+    font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);
+    padding:11px 14px;background:var(--panel);border:1px solid var(--border);border-radius:8px;
+    display:flex;align-items:center;gap:8px;user-select:none}
+  details.adv>summary::-webkit-details-marker{display:none}
+  details.adv>summary .chev{margin-left:auto;transition:.2s;color:var(--faint)}
+  details.adv[open]>summary .chev{transform:rotate(90deg)}
+  details.adv[open]>summary{border-radius:8px 8px 0 0;border-bottom:none}
+  .adv-body{background:var(--panel);border:1px solid var(--border);border-top:none;
+    border-radius:0 0 8px 8px;padding:15px 14px}
+
+  .result{background:linear-gradient(155deg,var(--panel2),var(--panel));
+    border:1px solid var(--border2);border-radius:10px;padding:0;overflow:hidden;margin-bottom:13px}
+  .res-hero{padding:18px 16px 16px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;
+    border-bottom:1px solid var(--border);position:relative}
+  .res-hero::after{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
+  .perkm{font-family:var(--mono);font-weight:700;font-size:46px;line-height:.9;color:var(--accent);letter-spacing:-1px}
+  .perkm small{font-size:16px;color:var(--muted);font-weight:500}
+  .perkm-lab{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:5px}
+  .total{text-align:right}
+  .total .v{font-family:var(--mono);font-weight:700;font-size:28px;line-height:1}
+  .total .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:5px}
+
+  .health{display:flex;align-items:center;gap:9px;padding:10px 16px;font-size:12.5px;border-bottom:1px solid var(--border)}
+  .health .dot{width:9px;height:9px;border-radius:50%;flex:none}
+  .health.ok .dot{background:var(--green);box-shadow:0 0 9px var(--green)}
+  .health.warn .dot{background:var(--red);box-shadow:0 0 9px var(--red)}
+  .health.ok{color:var(--green)} .health.warn{color:var(--red)}
+  .health b{font-family:var(--mono)}
+
+  .bar{display:flex;height:9px;margin:0}
+  .bar i{height:100%;display:block}
+
+  .bd{padding:6px 16px 14px}
+  .bd-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+  .bd-row:last-child{border-bottom:none}
+  .bd-row .sw{width:10px;height:10px;border-radius:2px;flex:none}
+  .bd-row .nm{flex:1;font-size:13px}
+  .bd-row .pk{font-family:var(--mono);font-size:11px;color:var(--faint);width:64px;text-align:right}
+  .bd-row .eu{font-family:var(--mono);font-size:14px;font-weight:500;width:74px;text-align:right}
+
+  .margin{padding:14px 16px;border-top:1px solid var(--border);display:none}
+  .margin.show{display:block}
+  .margin .mt{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+  .margin .mt .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+  .margin .mt .v{font-family:var(--mono);font-weight:700;font-size:22px}
+  .verdict{font-size:13px;margin-top:6px;font-weight:500}
+  .pos{color:var(--green)} .neg{color:var(--red)}
+
+  .note{font-size:11.5px;color:var(--faint);line-height:1.5;margin-top:9px}
+  .note b{color:var(--muted)}
+  .foot{text-align:center;font-size:11px;color:var(--faint);margin-top:22px;line-height:1.6;font-family:var(--mono)}
+  .foot b{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title">Trip <span>cost</span></div>
+    <div class="tag" id="modetag">ROUTE</div>
+  </header>
+
+  <div class="modes">
+    <button id="mRoute" class="on" onclick="setMode('route')">Route<span class="mlabel">single route</span></button>
+    <button id="mCad" onclick="setMode('cadence')">Cadence<span class="mlabel">full cadence</span></button>
+  </div>
+
+  <div class="result">
+    <div class="res-hero">
+      <div>
+        <div class="perkm"><span id="rPerkm">1.00</span><small> €/km</small></div>
+        <div class="perkm-lab">cost per km</div>
+      </div>
+      <div class="total">
+        <div class="v" id="rTotal">€1 371</div>
+        <div class="l">trip total</div>
+      </div>
+    </div>
+    <div class="health ok" id="rHealth"><span class="dot"></span><span id="rHealthTxt"></span></div>
+    <div class="bar" id="rBar"></div>
+    <div class="bd" id="rBreak"></div>
+    <div class="margin" id="rMargin">
+      <div class="mt"><span class="l">Margin</span><span class="v" id="rMarginV">—</span></div>
+      <div class="verdict" id="rVerdict"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Trip data</h2>
+    <div class="grid2">
+      <label class="f"><span class="lab">Distance</span>
+        <div class="unit"><input class="inp" id="km" type="number" inputmode="numeric" value="1376"><span class="u">km</span></div></label>
+      <label class="f"><span class="lab">Days on road</span>
+        <div class="unit"><input class="inp" id="days" type="number" inputmode="numeric" value="3"><span class="u">d</span></div></label>
+      <label class="f"><span class="lab">Fuel consumption</span>
+        <div class="unit"><input class="inp" id="cons" type="number" inputmode="decimal" step="0.5" value="22"><span class="u">L/100</span></div></label>
+      <label class="f"><span class="lab">Fuel price</span>
+        <div class="unit"><input class="inp" id="fuel" type="number" inputmode="decimal" step="0.01" value="1.27"><span class="u">€/L</span></div></label>
+      <label class="f"><span class="lab">Type / driver</span>
+        <select class="inp" id="dtype">
+          <option value="533">Tilt — 533 zł/d</option>
+          <option value="553">Reefer / ADR — 553 zł/d</option>
+          <option value="568" selected>Container — 568 zł/d</option>
+        </select></label>
+      <label class="f"><span class="lab">Freight (revenue)</span>
+        <div class="unit"><input class="inp" id="freight" type="number" inputmode="numeric" placeholder="0" value=""><span class="u">€</span></div></label>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Tolls</h2>
+    <div class="toll-head"><span>Country</span><span></span><span>€/km</span><span>Σ €</span></div>
+    <div id="tollRows"></div>
+    <div class="toll-row" style="margin-top:9px;border-top:1px solid var(--border);padding-top:11px">
+      <div class="cc" style="font-size:12px;color:var(--muted);grid-column:1/3">Concessions / manual</div>
+      <input class="inp" id="tollManual" type="number" inputmode="numeric" value="0" style="grid-column:3/5;text-align:right">
+    </div>
+    <div class="note">For <b>DE/BE/NL</b> — actual km × rate. For <b>PL/IT/FR</b> — average (approx). Concessions (A1 AmberOne, A2) are best added manually as a fixed amount.</div>
+  </div>
+
+  <details class="adv">
+    <summary>Coefficients &amp; rates <span class="chev">&rsaquo;</span></summary>
+    <div class="adv-body">
+      <div class="grid2">
+        <label class="f"><span class="lab">Fixed (overhead)</span>
+          <div class="unit"><input class="inp" id="cFixed" type="number" inputmode="decimal" step="0.01" value="0.21"><span class="u">€/km</span></div></label>
+        <label class="f"><span class="lab">AdBlue</span>
+          <div class="unit"><input class="inp" id="cAdblue" type="number" inputmode="decimal" step="0.01" value="0.01"><span class="u">€/km</span></div></label>
+        <label class="f"><span class="lab">Driver expenses</span>
+          <div class="unit"><input class="inp" id="cExp" type="number" inputmode="decimal" step="0.01" value="0.02"><span class="u">€/km</span></div></label>
+        <label class="f"><span class="lab">Trailer rental</span>
+          <div class="unit"><input class="inp" id="cRent" type="number" inputmode="decimal" step="0.01" value="0"><span class="u">€/km</span></div></label>
+        <label class="f"><span class="lab">FX zł &rarr; €</span>
+          <input class="inp" id="kurs" type="number" inputmode="decimal" step="0.01" value="4.25"></label>
+      </div>
+      <div class="note"><b>Per-km sum:</b> fixed + AdBlue + expenses + rental = <span id="sumPerkm" style="font-family:var(--mono);color:var(--muted)"></span> €/km. Driver daily rates are hardcoded: 533 / 553 / 568 zł — change in code if they change.</div>
+    </div>
+  </details>
+
+  <div class="foot">
+    tracker 2026 benchmark: <b>blended &asymp; €1.22/km</b><br>
+    leg floor &asymp; €1.0 &middot; healthy zone 1.00&ndash;1.30 €/km
+  </div>
+</div>
+
+<script>
+  var MODE='route';
+
+  var COUNTRIES=[
+    ['PL',478,0.12],['DE',590,0.348],['BE',0,0.18],
+    ['NL',0,0.16],['FR',0,0.27],['IT',0,0.15],['AT',0,0.40]
+  ];
+  var COLORS=['#ffb02e','#41d392','#5aa9ff','#ff7e54','#c98bff','#ffd84d','#9aa6b5'];
+
+  (function(){
+    var html='';
+    COUNTRIES.forEach(function(c,i){
+      html+='<div class="toll-row">'
+        +'<div class="cc">'+c[0]+'</div>'
+        +'<input class="inp tollkm" data-i="'+i+'" type="number" inputmode="numeric" placeholder="km" value="'+(c[1]||'')+'">'
+        +'<input class="inp tollrate" data-i="'+i+'" type="number" inputmode="decimal" step="0.01" value="'+c[2]+'">'
+        +'<div class="sub" id="tsub'+i+'">€0</div>'
+        +'</div>';
+    });
+    document.getElementById('tollRows').innerHTML=html;
+  })();
+
+  function val(id){var e=document.getElementById(id);var v=parseFloat(e.value);return isNaN(v)?0:v;}
+  function fmtE(n){return '€'+Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');}
+  function fmtE1(n){return '€'+n.toFixed(0);}
+
+  function setMode(m){
+    MODE=m;
+    document.getElementById('mRoute').classList.toggle('on',m==='route');
+    document.getElementById('mCad').classList.toggle('on',m==='cadence');
+    document.getElementById('modetag').textContent=m.toUpperCase();
+    if(m==='cadence' && val('cons')<=22) document.getElementById('cons').value=30;
+    calc();
+  }
+
+  function calc(){
+    var km=val('km'), days=val('days'), cons=val('cons'), fuel=val('fuel');
+    var dtype=val('dtype'), kurs=val('kurs')||4.25;
+    var cFixed=val('cFixed'), cAdblue=val('cAdblue'), cExp=val('cExp'), cRent=val('cRent');
+    var freight=val('freight');
+
+    var toll=0;
+    document.querySelectorAll('.tollkm').forEach(function(el){
+      var i=el.getAttribute('data-i');
+      var tkm=parseFloat(el.value)||0;
+      var rate=parseFloat(document.querySelector('.tollrate[data-i="'+i+'"]').value)||0;
+      var s=tkm*rate; toll+=s;
+      document.getElementById('tsub'+i).textContent='€'+s.toFixed(0);
+    });
+    toll+=val('tollManual');
+
+    var fuelC = km*(cons/100)*fuel;
+    var adblueC = km*cAdblue;
+    var expC = km*cExp;
+    var rentC = km*cRent;
+    var driverC = days*(dtype/kurs);
+    var fixedC = km*cFixed;
+
+    var total = fuelC+adblueC+expC+rentC+toll+driverC+fixedC;
+    var perkm = km>0 ? total/km : 0;
+
+    document.getElementById('sumPerkm').textContent=(cFixed+cAdblue+cExp+cRent).toFixed(2);
+
+    document.getElementById('rPerkm').textContent=perkm.toFixed(2);
+    document.getElementById('rTotal').textContent=fmtE(total);
+
+    var h=document.getElementById('rHealth'), ht=document.getElementById('rHealthTxt');
+    if(perkm>=1.00 && perkm<=1.30){
+      h.className='health ok'; ht.innerHTML='formula healthy &middot; within <b>1.00&ndash;1.30</b> €/km';
+    } else if(perkm>0){
+      h.className='health warn';
+      ht.innerHTML=perkm<1.00?'below <b>1.00</b> — check inputs (consumption? toll?)':'above <b>1.30</b> — check days / toll / consumption';
+    } else { h.className='health'; ht.textContent='enter distance'; }
+
+    var items=[
+      ['Fuel',fuelC,COLORS[0]],
+      ['Driver',driverC,COLORS[1]],
+      ['Toll',toll,COLORS[2]],
+      ['Fixed',fixedC,COLORS[3]],
+      ['Driver exp.',expC,COLORS[4]],
+      ['Trailer rental',rentC,COLORS[6]],
+      ['AdBlue',adblueC,COLORS[5]]
+    ];
+    var bar='', bd='';
+    items.forEach(function(it){
+      if(it[1]<=0 && it[0]==='Trailer rental') return;
+      var pct=total>0?(it[1]/total*100):0;
+      bar+='<i style="width:'+pct+'%;background:'+it[2]+'"></i>';
+      var pk=km>0?(it[1]/km):0;
+      bd+='<div class="bd-row"><span class="sw" style="background:'+it[2]+'"></span>'
+        +'<span class="nm">'+it[0]+'</span>'
+        +'<span class="pk">'+pk.toFixed(3)+' /km</span>'
+        +'<span class="eu">'+fmtE1(it[1])+'</span></div>';
+    });
+    document.getElementById('rBar').innerHTML=bar;
+    document.getElementById('rBreak').innerHTML=bd;
+
+    var mB=document.getElementById('rMargin');
+    if(freight>0){
+      mB.classList.add('show');
+      var marg=freight-total;
+      var margkm=km>0?marg/km:0;
+      document.getElementById('rMarginV').textContent=fmtE(marg)+'  ('+margkm.toFixed(2)+' €/km)';
+      document.getElementById('rMarginV').className='v '+(marg>=0?'pos':'neg');
+      var vd=document.getElementById('rVerdict');
+      if(marg>=0){vd.className='verdict pos';vd.textContent='\u2713 profitable — freight covers cost';}
+      else{vd.className='verdict neg';vd.textContent='\u2717 loss '+fmtE(-marg)+' — freight below cost';}
+    } else {
+      mB.classList.remove('show');
+    }
+  }
+
+  document.querySelectorAll('input,select').forEach(function(el){
+    el.addEventListener('input',calc);
+  });
+  calc();
+</script>
+</body>
+</html>
