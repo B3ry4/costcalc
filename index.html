@@ -191,10 +191,16 @@
     <div class="toll-head"><span>Country</span><span></span><span>€/km</span><span>Σ €</span></div>
     <div id="tollRows"></div>
     <div class="toll-row" style="margin-top:9px;border-top:1px solid var(--border);padding-top:11px">
+      <div class="cc">LU</div>
+      <div style="font-size:11px;color:var(--muted);align-self:center">vignette × days</div>
+      <input class="inp" id="luxRate" type="number" inputmode="decimal" step="1" value="13" style="text-align:right">
+      <div class="sub" id="luxSub">€0</div>
+    </div>
+    <div class="toll-row" style="margin-top:7px;border-top:1px solid var(--border);padding-top:11px">
       <div class="cc" style="font-size:12px;color:var(--muted);grid-column:1/3">Concessions / manual</div>
       <input class="inp" id="tollManual" type="number" inputmode="numeric" value="0" style="grid-column:3/5;text-align:right">
     </div>
-    <div class="note">For <b>DE/BE/NL</b> — actual km × rate. For <b>PL/IT/FR</b> — average (approx). Concessions (A1 AmberOne, A2) are best added manually as a fixed amount.</div>
+    <div class="note">For <b>DE/BE/NL</b> — actual km × rate. For <b>PL/IT/FR/CZ/ES</b> — average (approx). <b>LU</b> — daily vignette (days × €13). Concessions (A1 AmberOne, A2) add manually.</div>
   </div>
 
   <details class="adv">
@@ -227,7 +233,8 @@
 
   var COUNTRIES=[
     ['PL',478,0.12],['DE',590,0.348],['BE',0,0.18],
-    ['NL',0,0.16],['FR',0,0.27],['IT',0,0.15],['AT',0,0.40]
+    ['NL',0,0.16],['FR',0,0.27],['IT',0,0.15],['AT',0,0.40],
+    ['CZ',0,0.10],['ES',0,0.12]
   ];
   var COLORS=['#ffb02e','#41d392','#5aa9ff','#ff7e54','#c98bff','#ffd84d','#9aa6b5'];
 
@@ -272,6 +279,11 @@
       document.getElementById('tsub'+i).textContent='€'+s.toFixed(0);
     });
     toll+=val('tollManual');
+
+    // LU vignette: days × rate
+    var luxC = days * val('luxRate');
+    toll += luxC;
+    document.getElementById('luxSub').textContent = '€' + luxC.toFixed(0);
 
     var fuelC = km*(cons/100)*fuel;
     var adblueC = km*cAdblue;
